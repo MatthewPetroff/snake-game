@@ -37,10 +37,19 @@ function updateSnake() {
 function updateApplePosition() {
 	while (true) {
 		applePosition = randomSpot();
-		if (applePosition[0] != snake[0][0] || applePosition[1] != snake[0][1]) {
+		if (appleNotOnSnake()) {
 			break;
 		}
 	}
+}
+
+function appleNotOnSnake() {
+	for (let i = 0; i < snake.length; i++) {
+		if (applePosition[0] === snake[i][0] && applePosition[1] === snake[i][1]) {
+			return false;
+		}	
+	}
+	return true;
 }
 
 function drawApple() {
@@ -81,6 +90,7 @@ function drawSnake() {
 
 function incrementScore() {
 	score++;
+	console.log(score);
 }
 
 function gameOver() {
@@ -89,7 +99,7 @@ function gameOver() {
 	}
 
 	for (let i = 1; i < snake.length; i++) {
-		if (snake[0] === snake [i]) {
+		if (snake[0][0] === snake[i][0] && snake[0][1] === snake[i][1]) {
 			console.log('ran into itself');
 		}
 	}
@@ -104,13 +114,14 @@ function updateScreen() {
 	canvasContext.fillRect(0, 0, canvas.width, canvas.height);
 	updateSnake();
 	drawSnake();
+	gameOver();
 	if (applePosition[0] === snake[0][0] && applePosition[1] === snake[0][1]) {
 		addToSnake();
 		incrementScore();
 		updateApplePosition();
 	} 
 	drawApple();	
-	gameOver();
+	
 }
 
 document.addEventListener("keydown", function(event) {
@@ -125,3 +136,9 @@ window.onload = function() {
 	drawApple();
 	setInterval(updateScreen, 75);
 }
+
+//To-do
+//1. End game on wall run in
+//2. Update score
+//3. Save high score
+//4. Refactor
