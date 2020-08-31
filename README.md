@@ -1,6 +1,6 @@
 ## Snake Game
 
-_Classic Snake Game app that allows the user to play the Snake Game in the browser._
+_Classic Snake Game that the user can play in the browser._
 
 _To try the app, click [here](https://matthewpetroff.github.io/snake-game/)._
 
