@@ -8,7 +8,7 @@ _To try the app, click [here](https://matthewpetroff.github.io/snake-game/)._
 
 ### Summary
 
-Classic Snake built with HTML, CSS, and JavaScript. The user's high score is tracked on the screen across multiple rounds.
+Classic Snake Game built with HTML, CSS, and JavaScript.
 
 __Object of the Game:__
 
