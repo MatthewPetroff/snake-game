@@ -5,15 +5,14 @@ let snake;
 let applePosition;
 let score;
 let highScore = 0;
-let playing = true;
 
-function randomSpot() {
-	const x = Math.floor(Math.random() * Math.floor(40)) * 20;
-	const y = Math.floor(Math.random() * Math.floor(30)) * 20;
+function randomPosition() {
+	const x = Math.floor(Math.random() * Math.floor(30)) * 20;
+	const y = Math.floor(Math.random() * Math.floor(20)) * 20;
 	return [x, y];
 }
 
-function updateSnake() {
+function updateSnakePosition() {
 	switch (direction) {
 		case 'ArrowUp':
 			snake.splice(0, 0, [snake[0][0], snake[0][1] - 20]);
@@ -38,25 +37,11 @@ function updateSnake() {
 
 function setApplePosition() {
 	while (true) {
-		applePosition = randomSpot();
+		applePosition = randomPosition();
 		if (appleNotOnSnake()) {
 			break;
 		}
 	}
-}
-
-function appleNotOnSnake() {
-	for (let i = 0; i < snake.length; i++) {
-		if (applePosition[0] === snake[i][0] && applePosition[1] === snake[i][1]) {
-			return false;
-		}	
-	}
-	return true;
-}
-
-function drawApple() {
-	canvasContext.fillStyle = 'red';
-	canvasContext.fillRect(applePosition[0], applePosition[1], 20, 20);
 }
 
 function updateDirection() {
@@ -83,25 +68,12 @@ function updateDirection() {
 	}
 }
 
-function drawSnake() {
-	for (let i = 0; i < snake.length; i++) {
-		canvasContext.fillStyle = 'blue';
-		canvasContext.fillRect(snake[i][0], snake[i][1], 20, 20);	
-	}
-}
-
-function incrementScore() {
-	score++;
-	document.getElementById('scoreboard').textContent = `Score: ${score} High Score: ${highScore}`;
-}
-
-function updateHighScore() {
-	highScore = score;
+function updateScoreboard() {
 	document.getElementById('scoreboard').textContent = `Score: ${score} High Score: ${highScore}`;
 }
 
 function snakeHitsWall() {
-	if (snake[0][0] > 780 || snake[0][0] < 0 || snake[0][1] > 580 || snake[0][1] < 0) {
+	if (snake[0][0] > 580 || snake[0][0] < 0 || snake[0][1] > 380 || snake[0][1] < 0) {
 		return true;
 	}
 	return false;
@@ -116,18 +88,43 @@ function snakeHitsSelf() {
 	return false;
 }	
 
+function appleNotOnSnake() {
+	for (let i = 0; i < snake.length; i++) {
+		if (applePosition[0] === snake[i][0] && applePosition[1] === snake[i][1]) {
+			return false;
+		}	
+	}
+	return true;
+}
+
 function addToSnake() {
 	snake.splice(0, 0, applePosition);	
 }
+
+function drawApple() {
+	canvasContext.fillStyle = '#C62D36';
+	canvasContext.fillRect(applePosition[0], applePosition[1], 20, 20);
+}
+
 function drawBoard() {
 	canvasContext.fillStyle = 'black';
 	canvasContext.fillRect(0, 0, canvas.width, canvas.height);
 }
 
+function drawSnake() {
+	for (let i = 0; i < snake.length; i++) {
+		canvasContext.fillStyle = '#88F010';
+		canvasContext.fillRect(snake[i][0], snake[i][1], 20, 20);	
+	}
+}
+
 function initializeGame() {
 	direction = null;
 	score = 0;
-	snake = [randomSpot()];
+	snake = [randomPosition()];
+	canvas = document.getElementById('gameCanvas');
+	canvasContext = canvas.getContext('2d');
+	updateScoreboard();
 	drawBoard();
 	drawSnake();
 	setApplePosition();
@@ -137,43 +134,39 @@ function initializeGame() {
 function gameplay() {
 	const snakeEatsApple = (applePosition[0] === snake[0][0] && applePosition[1] === snake[0][1]);
 	drawBoard();
-	updateSnake();
+	updateSnakePosition();
 	drawSnake();
 	if (snakeEatsApple) {
+		score++;
 		addToSnake();
-		incrementScore();
 		setApplePosition();
+		updateScoreboard();
 	} 
 	drawApple();
+}
+
+function gameLoop() {
+	let game = setInterval(() => {
+		if (snakeHitsWall() || snakeHitsSelf()) {
+		if (score > highScore) {
+			highScore = score;
+			updateScoreboard();
+		}
+		clearInterval(game);
+	}
+	gameplay();}, 100);
 }
 
 document.addEventListener('keydown', function(event) {
 	updateDirection();
 })
 
-document.getElementById('new-game').addEventListener('click', function(e) {
-	if (!displayNum.includes('.')) {
-		updateDisplayNum('.');
-	}
-});
-
 window.onload = function() {
-	canvas = document.getElementById('gameCanvas');
-	canvasContext = canvas.getContext('2d');
 	initializeGame();
-
-	let game = setInterval(() => {
-		if (snakeHitsWall() || snakeHitsSelf()) {
-			if (score > highScore) {
-				updateHighScore();
-			}
-			clearInterval(game);
-		}
-		gameplay();
-	}, 100);
+	gameLoop();
 }
 
-	
-
-//To-do
-//1. Give player option to play again
+document.getElementById('new-game').addEventListener('click', function(e) {
+	initializeGame();
+	gameLoop();
+});
