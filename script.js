@@ -1,5 +1,7 @@
-let canvas;
-let canvasContext;
+const canvas = document.getElementById('gameCanvas');
+const canvasContext = canvas.getContext('2d');
+const gridSize = 20;
+
 let direction;
 let snake;
 let applePosition;
@@ -7,27 +9,27 @@ let score;
 let highScore = 0;
 
 function randomPosition() {
-	const x = Math.floor(Math.random() * Math.floor(30)) * 20;
-	const y = Math.floor(Math.random() * Math.floor(20)) * 20;
+	const x = Math.floor(Math.random() * Math.floor(30)) * gridSize;
+	const y = Math.floor(Math.random() * Math.floor(20)) * gridSize;
 	return [x, y];
 }
 
 function updateSnakePosition() {
 	switch (direction) {
 		case 'ArrowUp':
-			snake.splice(0, 0, [snake[0][0], snake[0][1] - 20]);
+			snake.splice(0, 0, [snake[0][0], snake[0][1] - gridSize]);
 			snake.pop();
 			return;
 		case 'ArrowDown':
-			snake.splice(0, 0, [snake[0][0], snake[0][1] + 20]);
+			snake.splice(0, 0, [snake[0][0], snake[0][1] + gridSize]);
 			snake.pop();
 			return
 		case 'ArrowLeft':
-			snake.splice(0, 0, [snake[0][0] - 20, snake[0][1]]);
+			snake.splice(0, 0, [snake[0][0] - gridSize, snake[0][1]]);
 			snake.pop();
 			return
 		case 'ArrowRight':
-			snake.splice(0, 0, [snake[0][0] + 20, snake[0][1]]);
+			snake.splice(0, 0, [snake[0][0] + gridSize, snake[0][1]]);
 			snake.pop();
 			return
 		default:
@@ -73,7 +75,7 @@ function updateScoreboard() {
 }
 
 function snakeHitsWall() {
-	if (snake[0][0] > 580 || snake[0][0] < 0 || snake[0][1] > 380 || snake[0][1] < 0) {
+	if (snake[0][0] > (canvas.width - gridSize) || snake[0][0] < 0 || snake[0][1] > (canvas.height - gridSize) || snake[0][1] < 0) {
 		return true;
 	}
 	return false;
@@ -103,7 +105,7 @@ function addToSnake() {
 
 function drawApple() {
 	canvasContext.fillStyle = '#C62D36';
-	canvasContext.fillRect(applePosition[0], applePosition[1], 20, 20);
+	canvasContext.fillRect(applePosition[0], applePosition[1], gridSize, gridSize);
 }
 
 function drawBoard() {
@@ -114,7 +116,7 @@ function drawBoard() {
 function drawSnake() {
 	for (let i = 0; i < snake.length; i++) {
 		canvasContext.fillStyle = '#88F010';
-		canvasContext.fillRect(snake[i][0], snake[i][1], 20, 20);	
+		canvasContext.fillRect(snake[i][0], snake[i][1], gridSize, gridSize);	
 	}
 }
 
@@ -122,8 +124,6 @@ function initializeGame() {
 	direction = null;
 	score = 0;
 	snake = [randomPosition()];
-	canvas = document.getElementById('gameCanvas');
-	canvasContext = canvas.getContext('2d');
 	updateScoreboard();
 	drawBoard();
 	drawSnake();
@@ -148,9 +148,10 @@ function gameplay() {
 function gameLoop() {
 	let game = setInterval(() => {
 		if (snakeHitsWall() || snakeHitsSelf()) {
-		if (score > highScore) {
-			highScore = score;
-			updateScoreboard();
+			alert('Game Over...');
+			if (score > highScore) {
+				highScore = score;
+				updateScoreboard();
 		}
 		clearInterval(game);
 	}
