@@ -2,48 +2,61 @@ const canvas = document.getElementById('gameCanvas');
 const canvasContext = canvas.getContext('2d');
 const gridSize = 20;
 
-let direction;
-let snake;
 let applePosition;
+let direction;
 let score;
+let snake;
+let prevSnake;
 let highScore = 0;
 
 function randomPosition() {
-	const x = Math.floor(Math.random() * Math.floor(30)) * gridSize;
-	const y = Math.floor(Math.random() * Math.floor(20)) * gridSize;
-	return [x, y];
+	const x = Math.floor(Math.random() * Math.floor(canvas.width / gridSize)) * gridSize;
+	const y = Math.floor(Math.random() * Math.floor(canvas.height / gridSize)) * gridSize;
+	return {x: x, y: y};
 }
 
 function updateSnakePosition() {
+	const snakePosition = {};
 	switch (direction) {
 		case 'ArrowUp':
-			snake.splice(0, 0, [snake[0][0], snake[0][1] - gridSize]);
+			snakePosition.x = snake[0].x;
+			snakePosition.y = snake[0].y - gridSize;
+			snake.splice(0, 0, snakePosition);
 			snake.pop();
 			return;
 		case 'ArrowDown':
-			snake.splice(0, 0, [snake[0][0], snake[0][1] + gridSize]);
+			snakePosition.x = snake[0].x;
+			snakePosition.y = snake[0].y + gridSize;
+			snake.splice(0, 0, snakePosition);		
 			snake.pop();
-			return
+			return;
 		case 'ArrowLeft':
-			snake.splice(0, 0, [snake[0][0] - gridSize, snake[0][1]]);
+			snakePosition.x = snake[0].x - gridSize;
+			snakePosition.y = snake[0].y;
+			snake.splice(0, 0, snakePosition);
 			snake.pop();
-			return
+			return;
 		case 'ArrowRight':
-			snake.splice(0, 0, [snake[0][0] + gridSize, snake[0][1]]);
+			snakePosition.x = snake[0].x + gridSize;
+			snakePosition.y = snake[0].y;
+			snake.splice(0, 0, snakePosition);		
 			snake.pop();
-			return
+			return;
 		default:
-			return
+			return;
 	}
 }
 
 function setApplePosition() {
-	while (true) {
-		applePosition = randomPosition();
-		if (appleNotOnSnake()) {
-			break;
+	applePosition = randomPosition();
+	for (let segment of snake) {
+		if (segment.x === applePosition.x && segment.y === applePosition.y) {
+			applePosition = randomPosition();
+		} else {
+			return;
 		}
 	}
+	setApplePosition();
 }
 
 function updateDirection() {
@@ -75,15 +88,15 @@ function updateScoreboard() {
 }
 
 function snakeHitsWall() {
-	if (snake[0][0] > (canvas.width - gridSize) || snake[0][0] < 0 || snake[0][1] > (canvas.height - gridSize) || snake[0][1] < 0) {
+	if (snake[0].x > (canvas.width - gridSize) || snake[0].x < 0 || snake[0].y > (canvas.height - gridSize) || snake[0].y < 0) {
 		return true;
 	}
 	return false;
 }	
 	
 function snakeHitsSelf() {
-	for (let i = 3; i < snake.length; i++) {
-		if (snake[0][0] === snake[i][0] && snake[0][1] === snake[i][1]) {
+	for (let i = 1; i < snake.length; i++) {
+		if (snake[0].x === snake[i].x && snake[0].y === snake[i].y) {
 			return true;
 		}
 	}
@@ -92,20 +105,25 @@ function snakeHitsSelf() {
 
 function appleNotOnSnake() {
 	for (let i = 0; i < snake.length; i++) {
-		if (applePosition[0] === snake[i][0] && applePosition[1] === snake[i][1]) {
+		if (applePosition.x === snake[i].x && applePosition.y === snake[i].y) {
+			return true;
+		} else {
 			return false;
 		}	
 	}
-	return true;
+	return false;
 }
 
 function addToSnake() {
 	snake.splice(0, 0, applePosition);	
+	for (let i = snake.length - 1; i > 0; i--) {
+		snake[i] = prevSnake[i - 1];
+	}
 }
 
 function drawApple() {
 	canvasContext.fillStyle = '#C62D36';
-	canvasContext.fillRect(applePosition[0], applePosition[1], gridSize, gridSize);
+	canvasContext.fillRect(applePosition.x, applePosition.y, gridSize, gridSize);
 }
 
 function drawBoard() {
@@ -116,7 +134,7 @@ function drawBoard() {
 function drawSnake() {
 	for (let i = 0; i < snake.length; i++) {
 		canvasContext.fillStyle = '#88F010';
-		canvasContext.fillRect(snake[i][0], snake[i][1], gridSize, gridSize);	
+		canvasContext.fillRect(snake[i].x, snake[i].y, gridSize, gridSize);	
 	}
 }
 
@@ -132,10 +150,10 @@ function initializeGame() {
 }
 
 function gameplay() {
-	const snakeEatsApple = (applePosition[0] === snake[0][0] && applePosition[1] === snake[0][1]);
+	prevSnake = snake.slice();
 	drawBoard();
 	updateSnakePosition();
-	drawSnake();
+	const snakeEatsApple = appleNotOnSnake();
 	if (snakeEatsApple) {
 		score++;
 		addToSnake();
@@ -143,6 +161,7 @@ function gameplay() {
 		updateScoreboard();
 	} 
 	drawApple();
+	drawSnake();	
 }
 
 function gameLoop() {
